@@ -3,112 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <title>Multiple Steady States in a CSTR</title>
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.plot.ly/plotly-2.26.1.min.js"></script>
-  <style>
-    body {
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      background: #f3f4f6;
-      color: #111827;
-      padding: 1rem;
-      margin: 0;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    h1 {
-      text-align: center;
-      color: #8B0000;
-      margin-bottom: 1rem;
-      font-size: 1.75rem;
-      line-height: 1.2;
-    }
-    .outer-box {
-      background: #e5e7eb;
-      border-radius: 0.75rem;
-      padding: 1rem;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-    .panel {
-      background: #e5e7eb;
-      border-radius: 0.5rem;
-      padding: 1rem 1.25rem;
-      position: relative;
-      margin-bottom: 1rem;
-    }
-    .control {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.75rem;
-    }
-    .control:last-child {
-      margin-bottom: 0;
-    }
-    .control label {
-      white-space: nowrap;
-      font-size: 0.875rem;
-      flex-shrink: 0;
-      width: 270px;
-      color: #1f2937;
-    }
-    .control input[type="range"] {
-      flex: 1;
-      margin: 0 0.5rem;
-      height: 0.5rem;
-    }
-    .control button {
-      width: 1.75rem;
-      height: 1.75rem;
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-size: 1.25rem;
-      line-height: 1;
-      color: #374151;
-      margin-left: 0;
-    }
-    .control .value {
-      width: auto;
-      text-align: left;
-      font-size: 0.875rem;
-      margin-left: 0.1rem;
-      color: #1f2937;
-    }
-    .dual-control {
-      display: flex;
-      justify-content: space-between;
-    }
-    .dual-control .sub-control label {
-      width: auto;
-      margin-right: 0.5rem;
-    }
-    .dual-control .sub-control {
-      display: grid;
-      grid-template-columns: auto 1fr auto auto;
-      align-items: center;
-      column-gap: 0.1rem;
-      flex: 1;
-    }
-    .dual-control .sub-control + .sub-control {
-      margin-left: 2rem;
-    }
-    .dual-control .sub-control .value {
-      margin-left: 0.1rem;
-    }
-    #plot {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      height: 450px;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
     <h1>Multiple Steady States in a Continuously Stirred Tank Reactor</h1>
     <div class="outer-box">
+      <button class="menu-button" onclick="toggleMenu()">☰</button>
+      <div class="menu-content" id="menu">
+        <a onclick="alert('Directions section coming soon...')">Directions</a>
+        <a onclick="alert('Details section coming soon...')">Details</a>
+        <a onclick="alert('About section coming soon...')">About</a>
+      </div>
+      <button class="reset-button" onclick="resetValues()">Reset</button>
       <div class="panel">
         <div class="control">
           <label for="U">heat transfer coefficient (cal/[dm² K s])</label>
@@ -140,85 +48,7 @@
       <div id="plot"></div>
     </div>
   </div>
-  <script>
-    const kf0 = 1e11, Ef = 20000, Er = 24000, Rg = 1.987;
-    const rho = 0.8, Cp = 2, cA0 = 0.01, A = 8.94, dH = -15000;
-    const Tc = 310, v = 100;
-
-    const Ur = document.getElementById('U'),
-          krR = document.getElementById('kr'),
-          TfR = document.getElementById('Tf'),
-          tauR = document.getElementById('tau');
-    const Uval = document.getElementById('U-val'),
-          krVal = document.getElementById('kr-val'),
-          TfVal = document.getElementById('Tf-val'),
-          tauVal = document.getElementById('tau-val');
-
-    [['U', Ur], ['kr', krR], ['Tf', TfR], ['tau', tauR]].forEach(([id, input]) => {
-      document.getElementById(id + '-inc').onclick = () => {
-        input.stepUp();
-        update();
-      };
-      input.addEventListener('input', update);
-    });
-
-    function ebal(T, U, Tf) {
-      return ( -((v * rho * Cp * (T - Tf) + U * A * (T - Tc)) / (v * dH)) ) * 1000;
-    }
-    function mbal(T, tau, kr) {
-      const kf = kf0 * Math.exp(-Ef / (Rg * T));
-      const krExp = kr * Math.exp(-Er / (Rg * T));
-      return ((tau * kf * cA0) / (1 + tau * kf + tau * krExp)) * 1000;
-    }
-
-    function formatSci(val) {
-      if (val === 0) return '0';
-      const exponent = Math.floor(Math.log10(val));
-      const base = (val / Math.pow(10, exponent)).toFixed(1);
-      return `${base}×10<sup>${exponent}</sup>`;
-    }
-
-    function update() {
-      const U = +Ur.value,
-            kr = +krR.value,
-            Tf = +TfR.value,
-            tau = +tauR.value;
-
-      Uval.textContent = U.toFixed(1);
-      krVal.innerHTML = formatSci(kr);
-      TfVal.textContent = Tf;
-      tauVal.textContent = tau;
-
-      const T = [], E = [], M = [];
-      for (let i = 0; i <= 150; i++) {
-        const Ti = 250 + (400 - 250) * (i / 150);
-        T.push(Ti);
-        E.push(ebal(Ti, U, Tf));
-        M.push(mbal(Ti, tau, kr));
-      }
-
-      const xE = Tf <= 270 ? 290 : 330,
-            yE = ebal(xE, U, Tf),
-            xM = 375,
-            yM = mbal(xM, tau, kr);
-
-      Plotly.react('plot', [
-        { x: T, y: E, mode: 'lines', name: 'energy balance', line: { color: 'blue', width: 3 } },
-        { x: T, y: M, mode: 'lines', name: 'mass balance', line: { color: 'green', width: 3 } },
-        { x: [xE], y: [yE], mode: 'markers+text', text: ['energy balance'],
-          textposition: 'top center', textfont: { color: 'blue', size: 16 }, showlegend: false },
-        { x: [xM], y: [yM], mode: 'markers+text', text: ['mass balance'],
-          textposition: 'top center', textfont: { color: 'green', size: 16 }, showlegend: false }
-      ], {
-        margin: { t: 20, l: 60, r: 20, b: 60 },
-        xaxis: { range: [250, 400], dtick: 20, title: 'temperature (K)', mirror: true, ticks: 'outside' },
-        yaxis: { range: [0, 12], dtick: 2, title: 'product concentration (mmol/dm³)', mirror: true, ticks: 'outside' },
-        legend: { orientation: 'h', x: 0.5, xanchor: 'center', y: 1.05 },
-        plot_bgcolor: 'white', paper_bgcolor: 'white'
-      }, { displayModeBar: false });
-    }
-
-    update();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
+
