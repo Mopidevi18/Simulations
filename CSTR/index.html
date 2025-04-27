@@ -2,53 +2,63 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Multiple Steady States in a CSTR</title>
-  <link rel="stylesheet" href="css/style.css">
+  <title>Multiple Steady States in a Continuously Stirred Tank Reactor</title>
   <script src="https://cdn.plot.ly/plotly-2.26.1.min.js"></script>
+  <link rel="stylesheet" href="css/style.css?v=2">
 </head>
 <body>
   <div class="container">
     <h1>Multiple Steady States in a Continuously Stirred Tank Reactor</h1>
     <div class="outer-box">
-      <button class="menu-button" onclick="toggleMenu()">☰</button>
-      <div class="menu-content" id="menu">
-        <a onclick="alert('Directions section coming soon...')">Directions</a>
-        <a onclick="alert('Details section coming soon...')">Details</a>
-        <a onclick="alert('About section coming soon...')">About</a>
+      <!-- modal backdrop + content -->
+      <div id="modal" class="modal">
+        <div class="modal-content">
+          <button id="modal-close" class="modal-close">&times;</button>
+          <div id="modal-body"></div>
+        </div>
       </div>
-      <button class="reset-button" onclick="resetValues()">Reset</button>
+
+      <div class="hamburger-container">
+        <button class="menu-button" onclick="toggleMenu()">☰</button>
+        <div id="menu" class="menu-content">
+          <a href="#" id="dir-link">Directions</a>
+          <a href="#" id="details-link">Details</a>
+          <a href="#" id="about-link">About</a>
+        </div>
+      </div>
+    
+      <!-- Slider panel -->
       <div class="panel">
         <div class="control">
           <label for="U">heat transfer coefficient (cal/[dm² K s])</label>
           <input type="range" id="U" min="0" max="20" step="0.5" value="0">
-          <button id="U-inc">+</button>
           <div class="value" id="U-val">0.0</div>
         </div>
         <div class="control">
           <label for="kr">reverse reaction pre-exponential factor (1/s)</label>
           <input type="range" id="kr" min="0" max="30000000000000" step="1000000000000" value="0">
-          <button id="kr-inc">+</button>
           <div class="value" id="kr-val">0</div>
         </div>
         <div class="control dual-control">
           <div class="sub-control">
             <label for="Tf">feed temperature (K)</label>
             <input type="range" id="Tf" min="250" max="320" step="5" value="265">
-            <button id="Tf-inc">+</button>
             <div class="value" id="Tf-val">265</div>
           </div>
           <div class="sub-control">
             <label for="tau">residence time (s)</label>
             <input type="range" id="tau" min="100" max="1000" step="10" value="400">
-            <button id="tau-inc">+</button>
             <div class="value" id="tau-val">400</div>
           </div>
         </div>
       </div>
-      <div id="plot"></div>
+
+      <!-- Plot area -->
+      <div id="plot" style="background: white; border: none; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 500px;"></div>
     </div>
   </div>
+
   <script src="js/script.js"></script>
+  
 </body>
 </html>
-
