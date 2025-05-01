@@ -7,6 +7,7 @@ closeBtn   = document.getElementById('modal-close');
 function openModal(html) {
 body.innerHTML = html;
 modal.style.display = 'flex';
+if (window.MathJax) MathJax.typeset();
 }
 function closeModal() {
 modal.style.display = 'none';
@@ -18,27 +19,29 @@ modal.addEventListener('click', e => {
 if (e.target === modal) closeModal();
 });
 
+
 const detailsContent = `
-<h2>Details</h2>
+<h2 style="color:#8B0000;">DETAILS</h2>
 
 <p>The mass balance is nonlinear:</p>
-<p style="font-family: monospace; text-align:center; margin:0;">
-C<sub>B</sub> = τ k<sub>f</sub> e<sup>−E<sub>f</sub>/RT</sup> C<sub>A,0</sub>
-&nbsp; / &nbsp;
-(1 + τ k<sub>f</sub> e<sup>−E<sub>f</sub>/RT</sup> + τ k<sub>r</sub> e<sup>−E<sub>r</sub>/RT</sup>)
+
+<p style="text-align: center; font-size: 1.25rem;">
+\\[
+C_B = \\frac{\\tau k_f e^{-\\frac{E_f}{RT}} C_{A,0}}{1 + \\tau k_f e^{-\\frac{E_f}{RT}} + \\tau k_r e^{-\\frac{E_r}{RT}}}
+\\]
 </p>
 
-<p>where <em>C<sub>B</sub></em> is the concentration of product B (mol/dm³), <em>C<sub>A,0</sub></em> is the reactant feed concentration (mol), <em>k<sub>f</sub></em> and <em>k<sub>r</sub></em> are the pre-exponential factors for the forward and reverse reactions (1/s), <em>E<sub>f</sub></em> and <em>E<sub>r</sub></em> are the activation energies for the forward and reverse reactions (cal/mol), <em>τ</em> is residence time (s), <em>R</em> is the ideal gas constant (J/[mol K]), and <em>T</em> is the temperature of the CSTR (K).</p>
-
+<p>where \\( C_B \\) is the concentration of product B (mol/dm³), \\( C_{A,0} \\) is the reactant feed concentration (mol), \\( k_f \\) and \\( k_r \\) are the pre-exponential factors for the forward and reverse reactions (1/s), \\( E_f \\) and \\( E_r \\) are the activation energies (cal/mol), \\( \\tau \\) is residence time (s), \\( R \\) is the ideal gas constant (J/[mol·K]), and \\( T \\) is the temperature of the CSTR (K).</p>
 
 <p>The energy balance is linear and has two terms that correspond to (1) the energy needed to change the feed temperature to the reactor temperature, and (2) the energy removed or added by heat transfer to a cooling/heating fluid, which is at a constant temperature of 310 K.</p>
 
-<p style="font-family: monospace; text-align:center; margin:0;">
-C<sub>B</sub> = (−v ρ C<sub>p</sub>(T−T<sub>0</sub>) − U A(T−T<sub>c</sub>)) / (v ΔH)
+<p style="text-align: center; font-size: 1.25rem;">
+\\[
+C_B = \\frac{-v \\rho C_p (T - T_0) - UA(T - T_c)}{v \\Delta H}
+\\]
 </p>
 
-<p>where <em>v</em> is the volumetric flow rate (dm³/s), <em>ρ</em> is the density of the bulk fluid (kg/dm³), <em>C<sub>p</sub></em> is the mass heat capacity of the feed (cal/[kg K]), <em>T<sub>0</sub></em> and <em>T<sub>c</sub></em> are the temperatures of the feed and coolant (K), <em>U</em> is the heat transfer coefficient (cal/[dm² K s]), <em>A</em> is the heat transfer area (dm²), and <em>ΔH</em> is the heat of reaction (cal/mol).</p>
-
+<p>where \\( v \\) is the volumetric flow rate (dm³/s), \\( \\rho \\) is the density of the bulk fluid (kg/dm³), \\( C_p \\) is the mass heat capacity of the feed (cal/[kg·K]), \\( T_0 \\) and \\( T_c \\) are the temperatures of the feed and coolant (K), \\( U \\) is the heat transfer coefficient (cal/[dm²·K·s]), \\( A \\) is the heat transfer area (dm²), and \\( \\Delta H \\) is the heat of reaction (cal/mol).</p>
 
 <p>As the feed temperature increases from a low value, the reactor temperature increases until the reactor reaches a temperature above which three steady-state solutions are possible. The upper and lower solutions are stable, and the middle solution is unstable. The operating conditions of the reactor depend on how the reactor is started up. As the feed temperature increases further, a temperature is reached above which only one solution is possible, and this has a high conversion.</p>
 
@@ -47,24 +50,30 @@ C<sub>B</sub> = (−v ρ C<sub>p</sub>(T−T<sub>0</sub>) − U A(T−T<su
 
 
 
-
-
 // wire up your three links:
 document.getElementById('dir-link')
 .addEventListener('click', e => {
 e.preventDefault();
+document.getElementById('menu').style.display = 'none';
 openModal('<h2>Directions</h2><p>This simulation plots the concentration of product B versus temperature for the mass and energy balances on a continuous stirred-tank reactor (CSTR) with heat transfer. The reversible, elementary, exothermic reaction A --> B takes place in the CSTR. Use sliders to change the feed temperature, residence time, heat transfer coefficient, and reverse-reaction pre-exponential factor. The intersections of the green curve (mass balance) and blue line (energy balance) correspond to the steady-state solutions for the CSTR. Either one or three solutions are possible; for three solutions, the middle solution is unstable. </p>');
 });
 document.getElementById('details-link')
 .addEventListener('click', e => {
 e.preventDefault();
+document.getElementById('menu').style.display = 'none';
 openModal(detailsContent);
 });
 document.getElementById('about-link')
 .addEventListener('click', e => {
-e.preventDefault();
-openModal('<h2>About</h2><p>This simulation was created in the Department of Chemical and Biological Engineering, at University of Colorado Boulder for LearnChemE.com by Venkateswarlu Mopidevi under the direction of Professor John L. Falconer and Michelle Medlin. It is a JavaScript/HTML5 implementation of a Mathematica simulation (https://demonstrations.wolfram.com/MultipleSteadyStatesInAContinuouslyStirredTankReactor/) by Rachael L. Baumann. It was prepared with financial support from the National Science Foundation (DUE 2336987 and 2336988) in collaboration with Washington State University. Address any questions or comments to LearnChemE@gmail.com.  If this simulation is too big or too small for your screen, zoom out or in using command - or command +  on Mac or ctrl - or ctrl +  on Windows.  </p>');
+  e.preventDefault();
+  document.getElementById('menu').style.display = 'none';
+  openModal(`
+    <h2>About</h2>
+    <p>This simulation was created in the Department of Chemical and Biological Engineering, at University of Colorado Boulder for LearnChemE.com by Venkateswarlu Mopidevi under the direction of Professor John L. Falconer and Michelle Medlin. It is a JavaScript/HTML5 implementation of a  
+    <a href="https://demonstrations.wolfram.com/MultipleSteadyStatesInAContinuouslyStirredTankReactor/" target="_blank" rel="noopener noreferrer">Mathematica simulation</a> by Rachael L. Baumann. It was prepared with financial support from the National Science Foundation (DUE 2336987 and 2336988) in collaboration with Washington State University. Address any questions or comments to <a href="mailto:LearnChemE@gmail.com">LearnChemE@gmail.com</a>. If this simulation is too big or too small for your screen, zoom out or in using command - or command +  on Mac or ctrl - or ctrl +  on Windows.</p>
+  `);
 });
+
 
 function toggleMenu() {
 const menu = document.getElementById('menu');
