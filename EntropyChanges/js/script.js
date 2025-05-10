@@ -70,8 +70,8 @@ function updateUI() {
         pB    = +sliderPB.value,
         ratio = +sliderRatio.value;
 
-  valPA.textContent    = pA.toFixed(2) + ' bar';
-  valPB.textContent    = pB.toFixed(2) + ' bar';
+  valPA.textContent    = pA.toFixed(2);
+  valPB.textContent    = pB.toFixed(2);
   valRatio.textContent = ratio.toFixed(2);
 
   pAout.textContent  = pA.toFixed(2);
