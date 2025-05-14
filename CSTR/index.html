@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <title>Multiple Steady States in a Continuously Stirred Tank Reactor</title>
   <script src="https://cdn.plot.ly/plotly-2.26.1.min.js"></script>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script id="MathJax-script" async
+      src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <link rel="stylesheet" href="css/style.css?v=8">
 </head>
-
 <body>
   <div class="container">
+    <h1>Multiple Steady States in a Continuously Stirred Tank Reactor</h1>
     <div class="outer-box">
       <!-- modal backdrop + content -->
       <div id="modal" class="modal">
@@ -29,12 +29,12 @@
             <div class="value" id="U-val">0.0</div>
           </div>
           <div class="sub-control">
-            <label for="tau">residence time (s)</label>
-            <input type="range" id="tau" min="100" max="1000" step="10" value="400">
-            <div class="value" id="tau-val">400</div>
+            <label for="kr">reverse reaction pre-exponential factor (1/s)</label>
+            <input type="range" id="kr" min="0" max="30000000000000" step="1000000000000" value="0">
+            <div class="value" id="kr-val">0</div>
           </div>
-        </div>
-
+        </div>    
+            
         <div class="control dual-control">
           <div class="sub-control">
             <label for="Tf">feed temperature (K)</label>
@@ -42,12 +42,12 @@
             <div class="value" id="Tf-val">265</div>
           </div>
           <div class="sub-control">
-            <label for="kr">reverse reaction pre-exponential factor (1/s)</label>
-            <input type="range" id="kr" min="0" max="30000000000000" step="1000000000000" value="0">
-            <div class="value" id="kr-val">0</div>
+            <label for="tau">residence time (s)</label>
+            <input type="range" id="tau" min="100" max="1000" step="10" value="400">
+            <div class="value" id="tau-val">400</div>
           </div>
           <div class="hamburger-container">
-            <button class="menu-button" onclick="toggleMenu()"><div>☰</div></button>
+            <button class="menu-button" onclick="toggleMenu()">☰</button>
             <div id="menu" class="menu-content">
               <a href="#" id="dir-link">Directions</a>
               <a href="#" id="details-link">Details</a>
@@ -58,12 +58,11 @@
       </div>
 
       <!-- Plot area -->
-      <div id="plot" style="background: white; border: none; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05);"></div>
+      <div id="plot" style="background: white; border: none; border-radius: 0.5rem; padding: 0.75rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 500px;"></div>
     </div>
   </div>
 
   <script src="js/script.js"></script>
-
+  
 </body>
-
 </html>
