@@ -72,7 +72,7 @@ function updateUI() {
 
   valPA.textContent    = pA.toFixed(2);
   valPB.textContent    = pB.toFixed(2);
-  valRatio.textContent = ratio.toFixed(2);
+  valRatio.textContent = ratio.toFixed(1);
 
   pAout.textContent  = pA.toFixed(2);
   pBout.textContent  = pB.toFixed(2);
@@ -293,39 +293,31 @@ dropdown.querySelectorAll('li').forEach(item => {
     if (opt === 'directions') {
       title = 'Directions';
       body  = `
-      <p>In this simulation, ideal gases A and B are mixed isothermally by:</p>
-      <ul>
-        <li>Keeping total volume constant (remove barrier), or</li>
-        <li>Adding gas A to chamber B so final volume = initial volume of B (compress right).</li>
-      </ul>
-      <p>Click “mix gases” to initiate mixing. For "remove barrier", the entropy change of each gas is the same as that of a gas expanding into a vacuum. When the partial pressure decreases, entropy increases. For "compress right", if the partial pressure of a gas does not change, its entropy does not change, even when mixed with another gas. The total entropy change is the sum of the entropy changes of each gas.</p>
-      <p>Gas A is colored red and gas B is colored blue, and when the gases mix, different shades of purple result, depending on the ratio of moles of each species. As the pressures increase, the color becomes more intense. When the initial pressures of A and B are equal and the "remove barrier" is selected, which corresponds to mixing at constant pressure, the entropy of mixing is:</p>
-  
-      <div class="formula">
-        ΔS<sub>mix</sub> = – n<sub>A</sub> R ln x<sub>A</sub> – n<sub>B</sub> R ln x<sub>B</sub>
-      </div>
-  
-      <p>where x<sub>A</sub> and x<sub>B</sub> are the mole fractions of A and B in the final mixture. Note that the calculations only apply when A and B are different gases.</p>
+      <p>In this simulation, ideal gases A and B are mixed isothermally by
+      keeping total volume constant (remove barrier option) or
+      by adding gas A to gas B so final volume is the same as initial volume of gas B (select "compress right").
+      Click the “mix gases” to initiate mixing. For "remove barrier", the entropy change of each gas is the same as that of a gas expanding into a vacuum. When the partial pressure decreases, entropy increases. For "compress right", if the partial pressure of a gas does not change, its entropy does not change, even when mixed with another gas. The total entropy change is the sum of the entropy changes of each gas.
+      Gas A is colored red and gas B is colored blue, and when the gases mix, different shades of purple result, depending on the ratio of moles of each species. As the pressures increase, the color becomes more intense. When the initial pressures of A and B are equal and the "remove barrier" is selected, which corresponds to mixing at constant pressure, the entropy of mixing is:
+      <br>\\(\\Delta S_{\\text{mix}} = -n_A R \\ln x_A - n_B R \\ln x_B\\),
+      where x<sub>A</sub> and x<sub>B</sub> are the mole fractions of A and B in the final mixture. Note that the calculations only apply when A and B are different gases.
+      </p>
     `;
     }
     else if (opt === 'details') {
       title = 'Details';
       body  = `
-    <p>The total volume of the container is 2 m<sup>3</sup>.</p>
-
-    <div class="formula">ΔS<sub>Total</sub> = ΔS<sub>A</sub> + ΔS<sub>B</sub></div>
-
-    <div class="formula">ΔS<sub>A</sub> = – n<sub>A</sub> R ln (P<sub>F,A</sub> / P<sub>I,A</sub>)</div>
-    <div class="formula">ΔS<sub>B</sub> = – n<sub>B</sub> R ln (P<sub>F,B</sub> / P<sub>I,B</sub>)</div>
-
-    <p class="modal-or">or</p>
-
-    <div class="formula">ΔS<sub>A</sub> = n<sub>A</sub> R ln (V<sub>F,A</sub> / V<sub>I,A</sub>)</div>
-    <div class="formula">ΔS<sub>B</sub> = n<sub>B</sub> R ln (V<sub>F,B</sub> / V<sub>I,B</sub>)</div>
-
+       <p>The total volume of the container is 2 m<sup>3</sup>.</p>
+    \\[\\Delta S_{\\text{Total}} = \\Delta S_A + \\Delta S_B\\]
+    \\[\\Delta S_A = -n_A R \\ln\\left(\\frac{P_{F,A}}{P_{I,A}}\\right)\\]
+    \\[\\Delta S_B = -n_B R \\ln\\left(\\frac{P_{F,B}}{P_{I,B}}\\right)\\]
+    <p><em>or</em></p>
+    \\[\\Delta S_A = n_A R \\ln\\left(\\frac{V_{F,A}}{V_{I,A}}\\right)\\]
+    \\[\\Delta S_B = n_B R \\ln\\left(\\frac{V_{F,B}}{V_{I,B}}\\right)\\]
     <p>
-      where <em>n</em> represents the number of moles, <em>R</em> is the gas constant (J / [K·mol]), ΔS is the entropy change (J / K),
-      <em>P</em> is pressure (bar), <em>V</em> is volume (m<sup>3</sup>), the subscripts A and B represent the gases used, and the subscripts F and I represent the final and initial pressures.
+      where <em>n</em> represents the number of moles, <em>R</em> is the gas constant (J / [K·mol]), 
+      ΔS is the entropy change (J / K), <em>P</em> is the pressure (bar), 
+      <em>V</em> is volume (m<sup>3</sup>), the subscripts A and B represent the gases used, 
+      and the subscripts F and I represent the final and initial pressures.
     </p>
   `;
     }
@@ -335,20 +327,9 @@ dropdown.querySelectorAll('li').forEach(item => {
     <p>
       This simulation was created in the <a href="https://www.colorado.edu/chbe" target="_blank" rel="noopener">Department of Chemical and Biological Engineering</a> at University of Colorado Boulder
       for <a href="https://learncheme.com/" target="_blank" rel="noopener">LearnChemE.com</a> by <em>Venkateswarlu Mopidevi</em>
-      under the direction of Professor John L. Falconer and Michelle Medlin.
-    </p>
-
-    <p>
-      It is a JavaScript/HTML5 implementation of a
+      under the direction of Professor John L. Falconer and Michelle Medlin. It is a JavaScript/HTML5 implementation of a
       <a href="https://demonstrations.wolfram.com/EntropyChangesInMixingIdealGases/" target="_blank" rel="noopener">Mathematica simulation</a>
-      originally developed by Derek M. Machalek.
-    </p>
-
-    <p>
-      It was prepared with financial support from the National Science Foundation (DUE 2336987 and 2336988) in collaboration with Washington State University. Address any questions or comments to <a href="mailto:LearnChemE@gmail.com">LearnChemE@gmail.com</a>.
-    </p>
-
-    <p>
+      originally developed by Derek M. Machalek. It was prepared with financial support from the National Science Foundation (DUE 2336987 and 2336988) in collaboration with Washington State University. Address any questions or comments to <a href="mailto:LearnChemE@gmail.com">LearnChemE@gmail.com</a>.
       If this simulation is too big or too small for your screen, zoom out or in using command - or command +  on Mac or ctrl - or ctrl +  on Windows.  
     </p>
   `;
@@ -358,6 +339,10 @@ dropdown.querySelectorAll('li').forEach(item => {
     modalBody.innerHTML    = body;
     modal.classList.remove('hidden');
     dropdown.classList.add('hidden');
+    // re-render MathJax formulas
+    if (window.MathJax) {
+      MathJax.typesetPromise();
+    }
   });
 });
 
