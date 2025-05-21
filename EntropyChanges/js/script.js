@@ -95,6 +95,12 @@ mixBtn.addEventListener('click', () => {
         ratio = +sliderRatio.value,
         mode  = document.querySelector('input[name="mode"]:checked').value;
 
+  if (mode === 'remove') {
+    simulationCard.classList.add('no-barrier');
+  } else {
+    simulationCard.classList.remove('no-barrier');
+  }
+
   // volumes
   const vA0 = Vtot * (ratio / (1+ratio)),
         vB0 = Vtot - vA0;
@@ -147,7 +153,7 @@ mixBtn.addEventListener('click', () => {
 
   let go = 0;
   function step() {
-    go = Math.min(go + 0.02, 1);
+    go = Math.min(go + 0.001, 1);
 
     // interpolate pressures
     const rawPA = pAbar + go*(finalPAbar - pAbar),
@@ -255,6 +261,8 @@ resetBtn.addEventListener('click', () => {
   document.querySelector('.chamber.left').appendChild(sAout.parentElement);
   // redraw clean
   updateUI();
+  // make sure the barrier is back after a reset
+  simulationCard.classList.remove('no-barrier');
 });
 
 // live-update on slider moves

@@ -136,8 +136,8 @@ input[type="range"] {
 }
 .entropy-total {
   text-align: center;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: 1.5rem;
+  font-weight: 540;
   margin-top: 1rem;
 }
 
@@ -186,9 +186,16 @@ input[type="range"] {
   background: #fff;
   padding: 0.3rem 0.6rem;
   border-radius: 4px;
-  font-weight: 500;
+  font-size:1.5 rem;
+  font-weight: 540;
   margin: 0.3rem 0;
 }
+
+.pressure-label,
+.entropy-label {
+  font-size: 1.5rem;    
+  font-weight: 540;
+} 
 
 /* ─── your existing styles up through .simulation-card & .chamber ... */
 
@@ -356,4 +363,8 @@ mjx-container[jax="CHTML"][display="true"] {
   margin-right: auto !important;
   margin-top: 0.3em;
   margin-bottom: 0.3em;
+}
+
+.simulation-card.no-barrier .chamber.right {
+  border-left: none !important;
 }
