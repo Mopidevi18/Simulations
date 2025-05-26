@@ -11,19 +11,11 @@ const sliderPA       = document.getElementById('sliderPA'),
       valPB          = document.getElementById('valPB'),
       valRatio       = document.getElementById('valRatio'),
 
-      pAout          = document.getElementById('pA'),
-      pBout          = document.getElementById('pB'),
       sTotalE        = document.getElementById('sTotal'),
-      sAout          = document.getElementById('sA'),
-      sBout          = document.getElementById('sB'),
 
-      entropyTotal   = document.getElementById('entropyTotal'),
-      labelSA        = document.getElementById('labelSA'),
-      labelSB        = document.getElementById('labelSB'),
-
-      chamberL       = document.querySelector('.chamber.left'),
-      chamberR       = document.querySelector('.chamber.right'),
-      simulationCard = document.querySelector('.simulation-card');
+      entropyTotalDiv = document.getElementById('entropyTotal');
+let labelsVisible = false;
+let blendRect = null;  // holds the background rect drawn during "remove"
 
 // physical constants
 const R    = 8.314,   // J/(mol·K)
@@ -58,33 +50,263 @@ function hslToRgb(h, s, l) {
   return [Math.round(r*255), Math.round(g*255), Math.round(b*255)];
 }
 
+// ── svg.js setup ───────────────────────────────────────────────────
+const svgContainer = document.getElementById('svgCard');
+const svgWidth     = svgContainer.clientWidth;  // matches your CSS max-width
+const svgHeight    = 440;                       // same as your .simulation-card height
+
+// init the drawing surface
+const draw = SVG().addTo('#svgCard').size(svgWidth, svgHeight);
+
+
+// create left & right rectangles + barrier line
+let rectL   = draw.rect(svgWidth/2, svgHeight)
+                   .fill(colourFor(+sliderPA.value,   0))
+                   .stroke({ width: 3, color: '#000' });
+let rectR   = draw.rect(svgWidth/2, svgHeight)
+                   .fill(colourFor(+sliderPB.value, 240))
+                   .stroke({ width: 3, color: '#000' })
+                   .move(rectL.width(), 0);
+let barrier = draw.line(rectL.width(), 0, rectL.width(), svgHeight)
+                   .stroke({ width: 2, color: '#000' });
+
+// right after you create `draw`:
+const labelsLayer = draw.group();
+
+function makeCardGroup() {
+  const g = labelsLayer.group();
+  const bg = g.rect(1,1)
+              .fill('#fff')
+              .stroke({ width:1, color:'#ccc' })
+              .radius(6)
+              .addClass('card-bg');
+  const txt = g.text('')
+              .font({ size:25, anchor:'middle', fill:'#000' })
+              .leading(1.5)
+              .attr({ 'xml:space':'preserve' })
+              .addClass('card-text');
+
+  return { group: g, bg, txt };
+}
+
+// create left & right label‐cards
+const leftCard  = makeCardGroup();
+const rightCard = makeCardGroup();
+
+function updateLabels(curPA, curPB, dispSA, dispSB,
+                      leftChamberX = null, leftChamberWidth = null,
+                      rightChamberX = null, rightChamberWidth = null) {
+  const padX = 12, padY = 8;
+
+  // resolve chamber geometry (override args or live rects)
+  const leftX  = leftChamberX  !== null ? leftChamberX  : rectL.x();
+  const leftW  = leftChamberWidth  !== null ? leftChamberWidth  : rectL.width();
+  const rightX = rightChamberX !== null ? rightChamberX : rectR.x();
+  const rightW = rightChamberWidth !== null ? rightChamberWidth : rectR.width();
+
+  // clear old labels
+  labelsLayer.clear();
+  // figure out if we're in compress-right mode
+  const mode      = document.querySelector('input[name="mode"]:checked').value;
+  const ratio     = +sliderRatio.value;
+  const initialWL = svgWidth * (ratio / (1 + ratio));
+  const overlapW  = initialWL - leftW;   // how much purple has crept over red
+  // final region is [leftX … leftX+leftW+overlapW]
+  const rawCenterX = mode === 'compress'
+  ? leftX + (leftW + overlapW)/2
+  : leftX + leftW/2;
+
+  // Clamp the centerX to prevent label overflow into right chamber
+  const maxLabelX = svgWidth * 0.8;  // cap at 70% of width
+  const centerX = Math.min(rawCenterX, maxLabelX);
+
+  // ───────────────────────────────────────
+  // SPECIAL CASE: compress-right final state
+  // when left chamber is fully collapsed
+  if (labelsVisible && leftW < 1) {
+    labelsLayer.clear();
+
+    // compute center of the purple region
+    const visibleStart = rightX;
+    const visibleWidth = svgWidth - visibleStart;
+    const centerX      = visibleStart + visibleWidth/2;
+    const centerY      = svgHeight/2;
+    const vSpacing     = 60;  // vertical gap between cards
+
+    // helper to draw one card with tspans
+    function drawCard(posY, buildText) {
+      const g   = labelsLayer.group();
+      const txt = g.text('').font({ size: 25, anchor: 'start', fill: '#000' });
+      // buildText gets passed the text builder 't'
+      txt.text(t => buildText(t));
+      const bb = txt.bbox();
+      txt.move(padX, padY);
+      // background
+      g.rect(bb.width + padX*2, bb.height + padY*2)
+       .fill('#fff')
+       .stroke({ width: 1, color: '#ccc' })
+       .radius(6)
+       .opacity(0.95)
+       .move(0,0)
+       .back();
+      // center the group
+      const gbb = g.bbox();
+      g.move(centerX - gbb.width/2, posY - gbb.height/2);
+    }
+
+    // 1) P_B
+    drawCard(centerY - 1.5*vSpacing, t => {
+      t.tspan('P').font({ size: 25 });
+      t.tspan('B').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+      t.tspan(` = ${curPB.toFixed(2)} bar`).font({ size: 25 });
+    });
+
+    // 2) ΔS_B
+    drawCard(centerY - 0.5*vSpacing, t => {
+      t.tspan('ΔS').font({ size: 25 });
+      t.tspan('B').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+      t.tspan(` = ${dispSB} J/K`).font({ size: 25 });
+    });
+
+    // 3) P_A
+    drawCard(centerY + 0.5*vSpacing, t => {
+      t.tspan('P').font({ size: 25 });
+      t.tspan('A').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+      t.tspan(` = ${curPA.toFixed(2)} bar`).font({ size: 25 });
+    });
+
+    // 4) ΔS_A
+    drawCard(centerY + 1.5*vSpacing, t => {
+      t.tspan('ΔS').font({ size: 25 });
+      t.tspan('A').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+      t.tspan(` = ${dispSA} J/K`).font({ size: 25 });
+    });
+
+    labelsLayer.front();
+    return;
+  }
+
+  // ───────────────────────────────────────
+  // Otherwise fall back to two-chamber labels
+
+  // LEFT chamber
+  if (leftW > 0) {
+    // P_A
+    const gPA = labelsLayer.group();
+    const tPA = gPA.text('').font({ size: 25, anchor: 'start', fill: '#000' });
+    tPA.text(t => {
+      t.tspan('P').font({ size: 25 });
+      t.tspan('A').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+      t.tspan(` = ${curPA.toFixed(2)} bar`).font({ size: 25 });
+    });
+    let bb = tPA.bbox();
+    const bgPA = gPA.rect(bb.width + padX*2, bb.height + padY*2)
+                   .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
+    tPA.move(padX, padY);
+    gPA.move(centerX - (bb.width + padX*2)/2, svgHeight/2 + 50);
+    bgPA.back();
+
+    // ΔS_A
+    if (labelsVisible) {
+      const gSA = labelsLayer.group();
+      const tSA = gSA.text('').font({ size: 25, anchor: 'start', fill: '#000' });
+      tSA.text(t => {
+        t.tspan('ΔS').font({ size: 25 });
+        t.tspan('A').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+        t.tspan(` = ${dispSA} J/K`).font({ size: 25 });
+      });
+      bb = tSA.bbox();
+      const bgSA = gSA.rect(bb.width + padX*2, bb.height + padY*2)
+                     .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
+      tSA.move(padX, padY);
+      gSA.move(centerX  - (bb.width + padX*2)/2, svgHeight/2 + 120);
+      bgSA.back();
+    }
+  }
+
+  // RIGHT chamber - keep static position during compress-right animation
+  if (rightW > 0) {
+    // For compress-right mode, use the initial right chamber position
+    // const mode = document.querySelector('input[name="mode"]:checked').value;
+    // const ratio = +sliderRatio.value;
+    // const initialWL = svgWidth * (ratio/(1+ratio));
+    
+    // Use static positions for right chamber labels during compress-right
+    const staticRightX = mode === 'compress' ? initialWL : rightX;
+    const staticRightW = mode === 'compress' ? svgWidth - initialWL : rightW;
+    
+    // P_B
+    const gPB = labelsLayer.group();
+    const tPB = gPB.text('').font({ size: 25, anchor: 'start', fill: '#000' });
+    tPB.text(t => {
+      t.tspan('P').font({ size: 25 });
+      t.tspan('B').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+      t.tspan(` = ${curPB.toFixed(2)} bar`).font({ size: 25 });
+    });
+    let bb = tPB.bbox();
+    const bgPB = gPB.rect(bb.width + padX*2, bb.height + padY*2)
+                   .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
+    tPB.move(padX, padY);
+    gPB.move(staticRightX + staticRightW/2 - (bb.width + padX*2)/2, svgHeight/2 - 130);
+    bgPB.back();
+
+    // ΔS_B
+    if (labelsVisible) {
+      const gSB = labelsLayer.group();
+      const tSB = gSB.text('').font({ size: 25, anchor: 'start', fill: '#000' });
+      tSB.text(t => {
+        t.tspan('ΔS').font({ size: 25 });
+        t.tspan('B').font({ size: 15 }).attr({ 'baseline-shift': 'sub' });
+        t.tspan(` = ${dispSB} J/K`).font({ size: 25 });
+      });
+      bb = tSB.bbox();
+      const bgSB = gSB.rect(bb.width + padX*2, bb.height + padY*2)
+                     .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
+      tSB.move(padX, padY);
+      gSB.move(staticRightX + staticRightW/2 - (bb.width + padX*2)/2, svgHeight/2 - 60);
+      bgSB.back();
+    }
+  }
+
+  labelsLayer.front();
+}
 // redraw everything to match sliders (pre-mix)
 function updateUI() {
-  simulationCard.style.backgroundColor = 'white';
-  chamberR.style.borderLeft = '2px solid #000';
-  entropyTotal.style.display = 'none';
-  labelSA.style.display      = 'none';
-  labelSB.style.display      = 'none';
-
   const pA    = +sliderPA.value,
         pB    = +sliderPB.value,
         ratio = +sliderRatio.value;
 
+
+  // sync your DOM texts (unchanged)
   valPA.textContent    = pA.toFixed(2);
   valPB.textContent    = pB.toFixed(2);
   valRatio.textContent = ratio.toFixed(1);
 
-  pAout.textContent  = pA.toFixed(2);
-  pBout.textContent  = pB.toFixed(2);
+  // compute new pixel widths
+  const wL = svgWidth * (ratio/(1+ratio)),
+        wR = svgWidth - wL;
 
-  chamberL.style.flex            = ratio;
-  chamberR.style.flex            = 1;
-  chamberL.style.backgroundColor = colourFor(pA,   0);
-  chamberR.style.backgroundColor = colourFor(pB, 240);
+  // instantly reposition & recolor
+  rectL.width(wL).fill(colourFor(pA,   0));
+  rectR
+    .move(wL, 0)
+    .width(wR)
+    .fill(colourFor(pB, 240));
+  // barrier.plot([ [ wL, 0 ], [ wL, svgHeight ] ]);
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  if (mode === 'remove') {
+    barrier.hide();
+  } else {
+    barrier.plot([ [ wL, 0 ], [ wL, svgHeight ] ]).show();
+  }
+  updateLabels(pA, pB, 0, 0);
 }
 
 mixBtn.addEventListener('click', () => {
-  updateUI();
+  labelsVisible = true;
+  entropyTotalDiv.style.display = 'block';
+  // updateLabels(+sliderPA.value, +sliderPB.value, 0, 0); // Initialize labels
+  // updateUI();
   mixBtn.disabled      = true;
   sliderPA.disabled    =
   sliderPB.disabled    =
@@ -95,11 +317,29 @@ mixBtn.addEventListener('click', () => {
         ratio = +sliderRatio.value,
         mode  = document.querySelector('input[name="mode"]:checked').value;
 
-  if (mode === 'remove') {
-    simulationCard.classList.add('no-barrier');
-  } else {
-    simulationCard.classList.remove('no-barrier');
+     // CLEANUP: on first frame of compress-right, clear old blend and hide left
+   if (mode === 'remove') {
+    barrier.hide();
+    // 2) remove any internal strokes so there’s no middle border
+    rectL.stroke({ width: 0 });
+    rectR.stroke({ width: 0 });
+    blendRect?.remove();
+    blendRect = null;
+  }else if (mode === 'compress') {
+    // your existing compress clean-up
+    rectL.fill('transparent');
+    blendRect?.remove();
+    blendRect = null;
+    rectL.stroke({ width: 3, color: '#000' });
+    rectR.stroke({ width: 3, color: '#000' });
   }
+
+    // initial pixel widths
+    const initialWL = svgWidth * (ratio/(1+ratio));
+    const initialWR = svgWidth - initialWL;
+    // final “compressed” widths
+    const finalWL   = initialWR;      
+    const finalWR   = svgWidth - finalWL;
 
   // volumes
   const vA0 = Vtot * (ratio / (1+ratio)),
@@ -139,6 +379,20 @@ mixBtn.addEventListener('click', () => {
     finalPBbar = pBbar;
   }
 
+  // Pre-calculate the final mixed color for compress-right mode
+  let finalMixedColor;
+  if (mode === 'compress') {
+    const sum = finalPAbar + finalPBbar;
+    if (!sum) {
+      finalMixedColor = 'transparent';
+    } else {
+      const rFrac = finalPAbar/sum;
+      const bFrac = finalPBbar/sum;
+      const alpha = Math.min(sum/2, 1);
+      finalMixedColor = `rgba(${Math.round(255*rFrac)},0,${Math.round(255*bFrac)},${alpha.toFixed(2)})`;
+    }
+  }
+
   // for “remove” colour blend
   const lA   = (100-27*pAbar)/100,
         lB   = (100-27*pBbar)/100,
@@ -151,9 +405,14 @@ mixBtn.addEventListener('click', () => {
         b    = Math.round(rgbA[2]*wA + rgbB[2]*wB),
         blendRGB = `rgb(${r},${g},${b})`;
 
+  // after you compute blendRGB
+  // use the already-computed opaque blendRGB
+  let comp;
+
   let go = 0;
+  const increment = 0.0005;  // controls animation speed
   function step() {
-    go = Math.min(go + 0.001, 1);
+    go = Math.min(go + increment, 1);
 
     // interpolate pressures
     const rawPA = pAbar + go*(finalPAbar - pAbar),
@@ -162,108 +421,154 @@ mixBtn.addEventListener('click', () => {
     const curPA = isNaN(rawPA) ? 0 : rawPA,
           curPB = isNaN(rawPB) ? 0 : rawPB;
 
-    pAout.textContent = curPA.toFixed(2);
-    pBout.textContent = curPB.toFixed(2);
 
-    // interpolate entropies
-    const rawSA = Math.round(iSA * go),
-          rawSB = Math.round(iSB * go),
-          rawST = Math.round(iST * go);
+    // don't round early
+    const rawSA = dSA * go,
+          rawSB = dSB * go,
+          rawST = rawSA + rawSB;
 
-    const dispSA = isNaN(rawSA) ? 0 : rawSA,
-          dispSB = isNaN(rawSB) ? 0 : rawSB,
-          dispST = isNaN(rawST) ? 0 : rawST;
 
-    sAout.textContent   = dispSA;
-    sBout.textContent   = dispSB;
+    const dispSA = isNaN(rawSA) ? '0.0' : Math.round(rawSA);
+    const dispSB = isNaN(rawSB) ? '0.0' : Math.round(rawSB);
+    const dispST = isNaN(rawST) ? '0.0' : dispSA+dispSB;
+
+
+    // 3. update total ΔS display
     sTotalE.textContent = dispST;
 
-    entropyTotal.style.display = 'block';
-    labelSA.style.display      = 'block';
-    labelSB.style.display      = 'block';
-
+    // svg.js updates in step()
     if (mode === 'remove') {
-      chamberL.style.flex            = ratio;
-      chamberR.style.flex            = 1;
-      chamberL.style.backgroundColor = colourFor(curPA,   0);
-      chamberR.style.backgroundColor = colourFor(curPB, 240);
-      chamberR.style.borderLeft      = '2px solid #000';
+       // compute new pixel widths
+    const targetWL = svgWidth * (ratio / (1 + ratio));
+    const targetWR = svgWidth - targetWL;
 
-      if (go >= 1) {
-        chamberL.style.backgroundColor       = 'transparent';
-        chamberR.style.backgroundColor       = 'transparent';
-        chamberR.style.borderLeft            = 'none';
-        simulationCard.style.backgroundColor = blendRGB;
-      }
-
-    } else {
-      // compress-right
-      chamberL.style.flex            = ratio;
-      chamberR.style.flex            = 1;
-      chamberL.style.backgroundColor = 'transparent';
-      chamberR.style.borderLeft      = '2px solid #000';
-
-      if (go < 1) {
-        chamberR.style.backgroundColor = 'transparent';
-      } else {
-        // final red/blue blend
-        const pAf = finalPAbar,
-              pBf = finalPBbar,
-              sum = pAf + pBf;
-
-        let comp = 'transparent';
-        if (sum > 0) {
-          const rFrac = pAf/sum,
-                bFrac = pBf/sum,
-                alpha = Math.min(sum/2, 1);
-          const rr = Math.round(255 * rFrac),
-                bb = Math.round(255 * bFrac);
-          comp = `rgba(${rr},0,${bb},${alpha.toFixed(2)})`;
-        }
-        chamberR.style.backgroundColor = comp;
-
-        // move A-lines
-        const pALine = pAout.parentElement;
-        if (pALine.parentNode !== chamberR) chamberR.appendChild(pALine);
-        if (labelSA.parentNode !== chamberR) chamberR.appendChild(labelSA);
-        const sALine = sAout.parentElement;
-        if (sALine.parentNode !== chamberR) chamberR.appendChild(sALine);
-      }
+    rectL.width(targetWL).move(0, 0).fill(colourFor(curPA, 0));
+    rectR.width(targetWR).move(targetWL, 0).fill(colourFor(curPB, 240));
+    
+    if (go >= 0.5) {
+      rectL.fill('transparent').stroke({ width: 0 }); // Remove stroke only when transparent
+      rectR.fill('transparent').stroke({ width: 0 }); // Remove stroke only when transparent
+      blendRect?.remove();
+      blendRect = draw.rect(svgWidth, svgHeight)
+        .fill(blendRGB)
+        .stroke({ width: 3, color: '#000' }) // Add outer border to blend rect
+        .move(0, 0)
+        .back();
     }
 
-    if (go < 1) {
-      requestAnimationFrame(step);
-    } else {
-      mixBtn.disabled      = false;
-      sliderPA.disabled    =
-      sliderPB.disabled    =
-      sliderRatio.disabled = false;
-    }
+    updateLabels(curPA, curPB, dispSA, dispSB);
+    
+    } else {  // compress-right
+      // compress-right mix colour (pressure‐fraction RGBA)
+      comp = finalMixedColor;
+        // 1) compute current left-width and position
+  const currWL = initialWL * (1 - go); // Shrink from full width to 0
+  const currX = initialWL - currWL;    // Move right as it shrinks
+
+  // 2) update the red chamber (left)
+  rectL
+    .width(currWL)
+    .move(currX, 0)
+    .fill(colourFor(curPA, 0));
+
+  // 3) update the blue chamber (right)
+  rectR
+    .move(initialWL, 0)  // Fixed at original right position
+    .width(initialWR + (initialWL - currWL))  // Expand rightward
+    .fill(colourFor(curPB, 240));
+
+  // 4) update barrier position
+  barrier.plot([[initialWL, 0], [initialWL, svgHeight]]);
+
+  // 5) Handle the overlapping region
+  draw.findOne('rect.overlap')?.remove(); // Remove previous overlap if exists
+  
+  if (go < 1) {
+  const overlapW = initialWL - currWL;
+  const overlapX = currX + currWL;
+
+  // Trim right chamber width to exclude overlap
+  const trimmedRightW = initialWR + (initialWL - currWL) - overlapW;
+
+  // Update the visible right part
+  rectR
+    .move(initialWL + overlapW, 0)  // start after overlap
+    .width(trimmedRightW)           // avoid overlapping part
+    .fill(colourFor(curPB, 240));
+
+  // Explicitly draw overlap as separate layer
+  draw
+    .rect(overlapW, svgHeight)
+    .attr({ class: 'overlap' })
+    .move(overlapX, 0)
+    .fill(finalMixedColor);
+}
+
+
+  // 6) On completion, show final state
+  if (go >= 1) {
+    draw.findOne('rect.overlap')?.remove();
+    rectL.hide();
+    rectR.show().fill(finalMixedColor);
   }
 
+  // 7) Update labels with current positions
+  updateLabels(curPA, curPB, dispSA, dispSB, currX, currWL);
+  labelsLayer.front();
+    }
+    // ← HERE: update all four labels each frame
+     // Ensure labels stay visible
+    
+      if (go < 1) {
+        requestAnimationFrame(step);
+      } else {
+        mixBtn.disabled      = false;
+        sliderPA.disabled    =
+        sliderPB.disabled    =
+        sliderRatio.disabled = false;
+      }
+  }
   requestAnimationFrame(step);
 });
 
 // Reset handler
 resetBtn.addEventListener('click', () => {
-  // set sliders back to defaults
-  sliderPA.value    = 0.5;
-  sliderPB.value    = 0.5;
-  sliderRatio.value = 1.0;
-  // re-enable UI
-  mixBtn.disabled      = false;
-  sliderPA.disabled    =
-  sliderPB.disabled    =
+  labelsVisible = false;
+  sliderPA.value = 0.5;
+  sliderPB.value = 0.5;
+  sliderRatio.value = 1;
+
+  // re-enable UI…
+  entropyTotalDiv.style.display = 'none';
+  sTotalE.textContent = '0.0';
+  mixBtn.disabled = false;
+  sliderPA.disabled =
+  sliderPB.disabled =
   sliderRatio.disabled = false;
-  // clear any moved nodes (in case compress-right had appended them)
-  document.querySelector('.chamber.left').appendChild(pAout.parentElement);
-  document.querySelector('.chamber.left').appendChild(labelSA);
-  document.querySelector('.chamber.left').appendChild(sAout.parentElement);
-  // redraw clean
+
+  // bring left chamber back into view
+  rectL.show();
+
+  // redraw both halves to the 50/50 starting state
+  const half = svgWidth/2;
+  rectL
+    .fill(colourFor(0.5, 0))
+    .width(half)
+    .move(0, 0);
+
+  rectR
+    .fill(colourFor(0.5, 240))
+    .width(half)
+    .move(half, 0);
+
+  blendRect?.remove();
+  blendRect = null;
+  rectL.stroke({ width: 3, color: '#000' });
+  rectR.stroke({ width: 3, color: '#000' });
+  barrier.show();
   updateUI();
-  // make sure the barrier is back after a reset
-  simulationCard.classList.remove('no-barrier');
 });
+
 
 // live-update on slider moves
 [sliderPA, sliderPB, sliderRatio].forEach(el =>

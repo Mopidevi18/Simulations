@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Two-Chamber Mixer</title>
   <link rel="stylesheet" href="css/style.css" />
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   </script>
   <script>
   window.MathJax = {
@@ -84,26 +83,8 @@
       </div>
 
       <!-- inner black‐bordered simulation card -->
-      <div class="simulation-card">
-        <div class="chamber left">
-          <div class="pressure-label">
-            <em>P</em><sub>A</sub> = <span id="pA">0.50</span> bar
-          </div>
-          <div class="entropy-label" id="labelSA">
-            ΔS<sub>A</sub> = <span id="sA">0.0</span> J/K
-          </div>
-        </div>
-        <div class="chamber right">
-          <div class="pressure-label">
-            <em>P</em><sub>B</sub> = <span id="pB">0.50</span> bar
-          </div>
-          <div class="entropy-label" id="labelSB">
-            ΔS<sub>B</sub> = <span id="sB">0.0</span> J/K
-          </div>
-        </div>
-      </div>
-    </div>
-
+      <!-- svg.js will draw the two chambers here -->
+      <div id="svgCard" class="simulation-card"></div>
   </div>
 
   <!-- MODAL DIALOG -->
@@ -114,7 +95,7 @@
       <div id="modalBody"></div>
     </div>
   </div>
-
+  <script src="https://cdn.jsdelivr.net/npm/@svgdotjs/svg.js@3.2/dist/svg.min.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>
