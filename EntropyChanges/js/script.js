@@ -17,6 +17,9 @@ const sliderPA       = document.getElementById('sliderPA'),
 let labelsVisible = false;
 let blendRect = null;  // holds the background rect drawn during "remove"
 
+// Add this line near the top with other variables
+let animationRunning = false;
+
 // physical constants
 const R    = 8.314,   // J/(mol·K)
       T    = 298.0,   // K
@@ -305,6 +308,7 @@ function updateUI() {
 mixBtn.addEventListener('click', () => {
   labelsVisible = true;
   entropyTotalDiv.style.display = 'block';
+  animationRunning = true; // Set animation flag
   // updateLabels(+sliderPA.value, +sliderPB.value, 0, 0); // Initialize labels
   // updateUI();
   mixBtn.disabled      = true;
@@ -412,6 +416,10 @@ mixBtn.addEventListener('click', () => {
   let go = 0;
   const increment = 0.0005;  // controls animation speed
   function step() {
+    if (!animationRunning) {
+      return;
+    }
+
     go = Math.min(go + increment, 1);
 
     // interpolate pressures
@@ -519,7 +527,7 @@ mixBtn.addEventListener('click', () => {
     // ← HERE: update all four labels each frame
      // Ensure labels stay visible
     
-      if (go < 1) {
+      if (go < 1 && animationRunning) {
         requestAnimationFrame(step);
       } else {
         mixBtn.disabled      = false;
@@ -533,6 +541,9 @@ mixBtn.addEventListener('click', () => {
 
 // Reset handler
 resetBtn.addEventListener('click', () => {
+   // STOP any running animation first
+  animationRunning = false;
+
   labelsVisible = false;
   sliderPA.value = 0.5;
   sliderPB.value = 0.5;
@@ -563,6 +574,10 @@ resetBtn.addEventListener('click', () => {
 
   blendRect?.remove();
   blendRect = null;
+
+  // Remove overlap rectangle from compress-right animation
+  draw.findOne('rect.overlap')?.remove();
+  
   rectL.stroke({ width: 3, color: '#000' });
   rectR.stroke({ width: 3, color: '#000' });
   barrier.show();
