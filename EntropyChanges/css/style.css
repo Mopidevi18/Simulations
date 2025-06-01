@@ -478,6 +478,40 @@ input[type="range"]::-ms-thumb {
 }
 
 /* Responsive design for smaller screens */
+@media (max-width: 1100px) {
+  .slider-row:last-of-type {
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 0.4rem;
+  }
+  
+  .controls .slider-row:last-of-type .slider-group {
+    min-width: 180px; /* Make volume ratio slider smaller */
+    margin-right: 0.2rem;
+  }
+  
+  .controls .slider-row:last-of-type .slider-group .long-label {
+    min-width: 100px; /* Further reduce label width */
+  }
+  
+  input[type="range"] {
+    width: 100px; /* Make sliders narrower */
+  }
+  
+  .action-group {
+    gap: 0.4rem; /* Reduce gap between action elements */
+  }
+  
+  .action-group label {
+    font-size: 0.75rem; /* Smaller text */
+  }
+  
+  .mix-btn,
+  .reset-btn {
+    padding: 0.3rem 0.3rem; /* Smaller buttons */
+    font-size: 0.75rem;
+  }
+}
+
 @media (max-width: 950px) {
   .slider-row:last-of-type {
     flex-wrap: wrap; /* Allow wrapping on smaller screens */
