@@ -476,3 +476,43 @@ input[type="range"]::-ms-thumb {
   width: 16px; height: 16px; border: none; border-radius: 50%; background: #007bff;
   cursor: pointer; margin-top: 0;
 }
+
+/* Responsive design for smaller screens */
+@media (max-width: 950px) {
+  .slider-row:last-of-type {
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    gap: 0.5rem;
+  }
+  
+  .controls .slider-row:last-of-type .slider-group {
+    min-width: 200px; /* Make volume ratio slider smaller on small screens */
+    margin-right: 0.3rem;
+  }
+  
+  .action-group {
+    gap: 0.5rem; /* Reduce gap between action elements */
+  }
+  
+  .action-group label {
+    font-size: 0.8rem; /* Smaller text on small screens */
+  }
+  
+  .mix-btn,
+  .reset-btn {
+    padding: 0.4rem 0.4rem; /* Smaller buttons on small screens */
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .slider-row:last-of-type {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.8rem;
+  }
+  
+  .action-group {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+}
