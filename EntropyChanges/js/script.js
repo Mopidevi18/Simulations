@@ -134,7 +134,7 @@ function updateLabels(curPA, curPB, dispSA, dispSB,
     const visibleWidth = svgWidth - visibleStart;
     const centerX      = visibleStart + visibleWidth/2;
     const centerY      = svgHeight/2;
-    const vSpacing     = 50;  // increased vertical gap between cards for better spacing
+    const vSpacing     = 65;  // increased from 50 to 65 for better spacing between labels
 
     // helper to draw one card with tspans
     function drawCard(posY, buildText) {
