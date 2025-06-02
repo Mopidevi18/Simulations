@@ -56,7 +56,7 @@ function hslToRgb(h, s, l) {
 // ── svg.js setup ───────────────────────────────────────────────────
 const svgContainer = document.getElementById('svgCard');
 const svgWidth     = svgContainer.clientWidth;  // matches your CSS max-width
-const svgHeight    = 440;                       // same as your .simulation-card height
+const svgHeight    = 350;                       // updated to match new .simulation-card height of 350px
 
 // init the drawing surface
 const draw = SVG().addTo('#svgCard').size(svgWidth, svgHeight);
@@ -134,7 +134,7 @@ function updateLabels(curPA, curPB, dispSA, dispSB,
     const visibleWidth = svgWidth - visibleStart;
     const centerX      = visibleStart + visibleWidth/2;
     const centerY      = svgHeight/2;
-    const vSpacing     = 60;  // vertical gap between cards
+    const vSpacing     = 50;  // increased vertical gap between cards for better spacing
 
     // helper to draw one card with tspans
     function drawCard(posY, buildText) {
@@ -206,7 +206,7 @@ function updateLabels(curPA, curPB, dispSA, dispSB,
     const bgPA = gPA.rect(bb.width + padX*2, bb.height + padY*2)
                    .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
     tPA.move(padX, padY);
-    gPA.move(centerX - (bb.width + padX*2)/2, svgHeight/2 + 50);
+    gPA.move(centerX - (bb.width + padX*2)/2, svgHeight/2 + 40);
     bgPA.back();
 
     // ΔS_A
@@ -222,7 +222,7 @@ function updateLabels(curPA, curPB, dispSA, dispSB,
       const bgSA = gSA.rect(bb.width + padX*2, bb.height + padY*2)
                      .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
       tSA.move(padX, padY);
-      gSA.move(centerX  - (bb.width + padX*2)/2, svgHeight/2 + 120);
+      gSA.move(centerX  - (bb.width + padX*2)/2, svgHeight/2 + 95);
       bgSA.back();
     }
   }
@@ -250,7 +250,7 @@ function updateLabels(curPA, curPB, dispSA, dispSB,
     const bgPB = gPB.rect(bb.width + padX*2, bb.height + padY*2)
                    .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
     tPB.move(padX, padY);
-    gPB.move(staticRightX + staticRightW/2 - (bb.width + padX*2)/2, svgHeight/2 - 130);
+    gPB.move(staticRightX + staticRightW/2 - (bb.width + padX*2)/2, svgHeight/2 - 110);
     bgPB.back();
 
     // ΔS_B
@@ -266,7 +266,7 @@ function updateLabels(curPA, curPB, dispSA, dispSB,
       const bgSB = gSB.rect(bb.width + padX*2, bb.height + padY*2)
                      .fill('#fff').stroke({ width:1, color:'#ccc' }).radius(6).opacity(0.95);
       tSB.move(padX, padY);
-      gSB.move(staticRightX + staticRightW/2 - (bb.width + padX*2)/2, svgHeight/2 - 60);
+      gSB.move(staticRightX + staticRightW/2 - (bb.width + padX*2)/2, svgHeight/2 - 55);
       bgSB.back();
     }
   }
@@ -324,7 +324,7 @@ mixBtn.addEventListener('click', () => {
      // CLEANUP: on first frame of compress-right, clear old blend and hide left
    if (mode === 'remove') {
     barrier.hide();
-    // 2) remove any internal strokes so there’s no middle border
+    // 2) remove any internal strokes so there's no middle border
     rectL.stroke({ width: 0 });
     rectR.stroke({ width: 0 });
     blendRect?.remove();
@@ -341,7 +341,7 @@ mixBtn.addEventListener('click', () => {
     // initial pixel widths
     const initialWL = svgWidth * (ratio/(1+ratio));
     const initialWR = svgWidth - initialWL;
-    // final “compressed” widths
+    // final "compressed" widths
     const finalWL   = initialWR;      
     const finalWR   = svgWidth - finalWL;
 
@@ -397,7 +397,7 @@ mixBtn.addEventListener('click', () => {
     }
   }
 
-  // for “remove” colour blend
+  // for "remove" colour blend
   const lA   = (100-27*pAbar)/100,
         lB   = (100-27*pBbar)/100,
         rgbA = hslToRgb(0,   1, lA),
@@ -467,7 +467,7 @@ mixBtn.addEventListener('click', () => {
     updateLabels(curPA, curPB, dispSA, dispSB);
     
     } else {  // compress-right
-      // compress-right mix colour (pressure‐fraction RGBA)
+      // compress-right mix colour (pressure-fraction RGBA)
       comp = finalMixedColor;
         // 1) compute current left-width and position
   const currWL = initialWL * (1 - go); // Shrink from full width to 0
@@ -624,7 +624,7 @@ dropdown.querySelectorAll('li').forEach(item => {
       <p>In this simulation, ideal gases A and B are mixed isothermally by
       keeping total volume constant (remove barrier option) or
       by adding gas A to gas B so final volume is the same as initial volume of gas B (select "compress right").
-      Click the “mix gases” to initiate mixing. For "remove barrier", the entropy change of each gas is the same as that of a gas expanding into a vacuum. When the partial pressure decreases, entropy increases. For "compress right", if the partial pressure of a gas does not change, its entropy does not change, even when mixed with another gas. The total entropy change is the sum of the entropy changes of each gas.
+      Click the "mix gases" to initiate mixing. For "remove barrier", the entropy change of each gas is the same as that of a gas expanding into a vacuum. When the partial pressure decreases, entropy increases. For "compress right", if the partial pressure of a gas does not change, its entropy does not change, even when mixed with another gas. The total entropy change is the sum of the entropy changes of each gas.
       Gas A is colored red and gas B is colored blue, and when the gases mix, different shades of purple result, depending on the ratio of moles of each species. As the pressures increase, the color becomes more intense. When the initial pressures of A and B are equal and the "remove barrier" is selected, which corresponds to mixing at constant pressure, the entropy of mixing is:
       <br>\\(\\Delta S_{\\text{mix}} = -n_A R \\ln x_A - n_B R \\ln x_B\\),
       where x<sub>A</sub> and x<sub>B</sub> are the mole fractions of A and B in the final mixture. Note that the calculations only apply when A and B are different gases.
@@ -642,8 +642,8 @@ dropdown.querySelectorAll('li').forEach(item => {
     \\[\\Delta S_A = n_A R \\ln\\left(\\frac{V_{F,A}}{V_{I,A}}\\right)\\]
     \\[\\Delta S_B = n_B R \\ln\\left(\\frac{V_{F,B}}{V_{I,B}}\\right)\\]
     <p>
-      where <em>n</em> represents the number of moles, <em>R</em> is the gas constant (J / [K·mol]), 
-      ΔS is the entropy change (J / K), <em>P</em> is the pressure (bar), 
+      where <em>n</em> represents the number of moles, <em>R</em> is the gas constant (J / [K·mol]), 
+      ΔS is the entropy change (J / K), <em>P</em> is the pressure (bar), 
       <em>V</em> is volume (m<sup>3</sup>), the subscripts A and B represent the gases used, 
       and the subscripts F and I represent the final and initial pressures.
     </p>
@@ -658,7 +658,7 @@ dropdown.querySelectorAll('li').forEach(item => {
       under the direction of Professor John L. Falconer and Michelle Medlin. It is a JavaScript/HTML5 implementation of a
       <a href="https://demonstrations.wolfram.com/EntropyChangesInMixingIdealGases/" target="_blank" rel="noopener">Mathematica simulation</a>
       originally developed by Derek M. Machalek. It was prepared with financial support from the National Science Foundation (DUE 2336987 and 2336988) in collaboration with Washington State University. Address any questions or comments to <a href="mailto:LearnChemE@gmail.com">LearnChemE@gmail.com</a>.
-      If this simulation is too big or too small for your screen, zoom out or in using command - or command +  on Mac or ctrl - or ctrl +  on Windows.  
+      If this simulation is too big or too small for your screen, zoom out or in using command - or command + on Mac or ctrl - or ctrl + on Windows.  
     </p>
   `;
     }
@@ -674,7 +674,7 @@ dropdown.querySelectorAll('li').forEach(item => {
   });
 });
 
-// 4. Close modal when clicking the “×”
+// 4. Close modal when clicking the "×"
 modalClose.addEventListener('click', () => {
   modal.classList.add('hidden');
 });
