@@ -321,19 +321,37 @@ mixBtn.addEventListener('click', () => {
         ratio = +sliderRatio.value,
         mode  = document.querySelector('input[name="mode"]:checked').value;
 
-     // CLEANUP: on first frame of compress-right, clear old blend and hide left
+     // CLEANUP: Reset chambers to proper initial state for any animation
+   // First, clean up any previous animation artifacts
+   blendRect?.remove();
+   blendRect = null;
+   draw.findOne('rect.overlap')?.remove();
+   
+   // Reset both chambers to their proper initial state with correct colors and opacity
+   const initWL = svgWidth * (ratio/(1+ratio));
+   const initWR = svgWidth - initWL;
+   
+   rectL
+     .width(initWL)
+     .move(0, 0)
+     .fill(colourFor(pAbar, 0))
+     .opacity(1)
+     .show();
+   
+   rectR
+     .width(initWR)
+     .move(initWL, 0)
+     .fill(colourFor(pBbar, 240))
+     .opacity(1)
+     .show();
+
+   // Mode-specific setup
    if (mode === 'remove') {
     barrier.hide();
-    // 2) remove any internal strokes so there's no middle border
     rectL.stroke({ width: 0 });
     rectR.stroke({ width: 0 });
-    blendRect?.remove();
-    blendRect = null;
-  }else if (mode === 'compress') {
-    // your existing compress clean-up
-    rectL.fill('transparent');
-    blendRect?.remove();
-    blendRect = null;
+  } else if (mode === 'compress') {
+    barrier.show().plot([[initWL, 0], [initWL, svgHeight]]);
     rectL.stroke({ width: 3, color: '#000' });
     rectR.stroke({ width: 3, color: '#000' });
   }
@@ -414,7 +432,7 @@ mixBtn.addEventListener('click', () => {
   let comp;
 
   let go = 0;
-  const increment = 0.0005;  // controls animation speed
+  const increment = 0.002;  // increased from 0.0005 to 0.002 for faster animation speed
   function step() {
     if (!animationRunning) {
       return;
@@ -450,18 +468,35 @@ mixBtn.addEventListener('click', () => {
     const targetWL = svgWidth * (ratio / (1 + ratio));
     const targetWR = svgWidth - targetWL;
 
-    rectL.width(targetWL).move(0, 0).fill(colourFor(curPA, 0));
-    rectR.width(targetWR).move(targetWL, 0).fill(colourFor(curPB, 240));
-    
-    if (go >= 0.5) {
-      rectL.fill('transparent').stroke({ width: 0 }); // Remove stroke only when transparent
-      rectR.fill('transparent').stroke({ width: 0 }); // Remove stroke only when transparent
+    // Start blending colors gradually from the beginning
+    if (go >= 0.2) { // Start transition at 20% instead of 50%
+      // Calculate opacity for smooth transition
+      const blendProgress = Math.min((go - 0.2) / 0.3, 1); // Transition from 20% to 50%
+      const remainingOpacity = 1 - blendProgress;
+      
+      // Make individual chambers semi-transparent as blending progresses
+      rectL.width(targetWL).move(0, 0).fill(colourFor(curPA, 0)).opacity(remainingOpacity);
+      rectR.width(targetWR).move(targetWL, 0).fill(colourFor(curPB, 240)).opacity(remainingOpacity);
+      
+      // Create/update blend rectangle with increasing opacity
       blendRect?.remove();
       blendRect = draw.rect(svgWidth, svgHeight)
         .fill(blendRGB)
-        .stroke({ width: 3, color: '#000' }) // Add outer border to blend rect
+        .opacity(blendProgress)
+        .stroke({ width: 3, color: '#000' })
         .move(0, 0)
         .back();
+      
+      // Fully hide individual chambers and show only blend after 50%
+      if (go >= 0.5) {
+        rectL.fill('transparent').stroke({ width: 0 });
+        rectR.fill('transparent').stroke({ width: 0 });
+        blendRect.opacity(1); // Full opacity for blend
+      }
+    } else {
+      // Before 20%, show normal individual colors
+      rectL.width(targetWL).move(0, 0).fill(colourFor(curPA, 0)).opacity(1);
+      rectR.width(targetWR).move(targetWL, 0).fill(colourFor(curPB, 240)).opacity(1);
     }
 
     updateLabels(curPA, curPB, dispSA, dispSB);
@@ -565,12 +600,14 @@ resetBtn.addEventListener('click', () => {
   rectL
     .fill(colourFor(0.5, 0))
     .width(half)
-    .move(0, 0);
+    .move(0, 0)
+    .opacity(1); // Reset opacity to fully visible
 
   rectR
     .fill(colourFor(0.5, 240))
     .width(half)
-    .move(half, 0);
+    .move(half, 0)
+    .opacity(1); // Reset opacity to fully visible
 
   blendRect?.remove();
   blendRect = null;
