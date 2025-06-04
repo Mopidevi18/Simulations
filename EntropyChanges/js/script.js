@@ -432,7 +432,11 @@ mixBtn.addEventListener('click', () => {
   let comp;
 
   let go = 0;
-  const increment = 0.002;  // increased from 0.0005 to 0.002 for faster animation speed
+  // Different animation speeds for different modes
+  const removeBarrierSpeed = 0.0005;  // Slower for remove barrier (smoother blending)
+  const compressRightSpeed = 0.002;   // Faster for compress right (more dynamic movement)
+  const increment = mode === 'remove' ? removeBarrierSpeed : compressRightSpeed;
+  
   function step() {
     if (!animationRunning) {
       return;
