@@ -146,13 +146,13 @@ function updatePlot() {
       }
     ],
     {
-      margin:{t:22,l:60,r:40,b:60},
+      margin:{t:22,l:60,r:40,b:80},
       showlegend:false,
       autosize: true,
       xaxis:{
         title:{ 
           text:'total pressure (bar) = P<sub>A</sub> + P<sub>B</sub>',
-          standoff:10,
+          standoff:15,
           font:{size:20,family:'Helvetica, sans-serif',color:'#000'}
         },
         range:[0,10],

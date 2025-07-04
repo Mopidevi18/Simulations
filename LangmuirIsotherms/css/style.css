@@ -1,5 +1,10 @@
 /* ─── GLOBAL & CARD LAYOUT ───────────────────────────────────────── */
 
+/* Browser compatibility and consistent box sizing */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: sans-serif;
@@ -60,7 +65,7 @@ body {
 }
 
 .controls {
-  margin-top: 0rem;
+  margin-top: 0.5rem;
   margin-bottom: 10px;
   flex-shrink: 0;
   width: 100%;
@@ -111,12 +116,42 @@ body {
   margin: 0;
   flex: 1;
   max-width: 200px;
+  
+  /* Browser compatibility for consistent slider appearance */
+  -webkit-appearance: none;  /* Chrome/Safari/Opera */
+  -moz-appearance: none;     /* Firefox */
+  appearance: none;
+
+  height: 6px;
+  background: #ccc;
+  border-radius: 5px;
+  outline: none;
 }
 
 /* Secondary sliders in heat and ratio rows */
 .heat-group .slider-row input[type=range],
 .combined-group .slider-row input[type=range] {
   max-width: 120px;
+}
+
+/* Browser-specific slider thumb styling for consistency */
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #2a72de;
+  border: 2px solid #888;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.slider-row input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: #2a72de;
+  border: 2px solid #888;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 /* Values next to sliders */
